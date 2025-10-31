@@ -20,6 +20,7 @@ class PlacesController
         if (isset($_GET['category'])) $filters['category'] = $_GET['category'];
         if (isset($_GET['city'])) $filters['city'] = $_GET['city'];
         if (isset($_GET['rating'])) $filters['rating'] = $_GET['rating'];
+        if (isset($_GET['submitted_by'])) $filters['submitted_by'] = $_GET['submitted_by'];
         
         $sort = $_GET['sort'] ?? 'created_at';
         $order = $_GET['order'] ?? 'DESC';
@@ -88,6 +89,11 @@ class PlacesController
                     'message' => 'Invalid JSON data'
                 ]);
                 return;
+            }
+
+            // You might want to get this from authentication/session in a real app
+            if (!isset($input['submitted_by'])) {
+                $input['submitted_by'] = 'anonymous'; // or get from session/auth
             }
             
             // Create Place entity from input
@@ -162,6 +168,10 @@ class PlacesController
             $existingPlace->address = $input['address'] ?? $existingPlace->address;
             $existingPlace->city = $input['city'] ?? $existingPlace->city;
             $existingPlace->rating = isset($input['rating']) ? floatval($input['rating']) : $existingPlace->rating;
+            // Note: You might want to restrict who can change this field
+            if (isset($input['submitted_by'])) {
+                $existingPlace->submitted_by = $input['submitted_by'];
+            }
             
             // Validate updated entity
             $errors = $existingPlace->getValidationErrors();

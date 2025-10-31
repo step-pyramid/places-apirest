@@ -39,6 +39,11 @@ class PlaceRepository
             $whereConditions[] = "rating >= :rating";
             $params[':rating'] = floatval($filters['rating']);
         }
+
+        if (!empty($filters['submitted_by'])) {
+            $whereConditions[] = "submitted_by = :submitted_by";
+            $params[':submitted_by'] = $filters['submitted_by'];
+        }
         
         // Add WHERE clause if filters exist
         if (!empty($whereConditions)) {
@@ -79,7 +84,7 @@ class PlaceRepository
     // CREATE new place
     public function create(Place $place): bool {
         $query = "INSERT INTO " . $this->table_name . " 
-                 (name, description, category, address, city, rating, created_at) 
+                 (name, description, category, address, city, rating, submitted_by, created_at) 
                  VALUES (:name, :description, :category, :address, :city, :rating, NOW())";
         
         $stmt = $this->conn->prepare($query);
@@ -91,6 +96,7 @@ class PlaceRepository
         $address = htmlspecialchars(strip_tags($place->address));
         $city = htmlspecialchars(strip_tags($place->city));
         $rating = $place->rating;
+        $submitted_by = htmlspecialchars(strip_tags($place->submitted_by ?? 'anonymous')); 
         
         $stmt->bindParam(':name', $name);
         $stmt->bindParam(':description', $description);
@@ -98,6 +104,7 @@ class PlaceRepository
         $stmt->bindParam(':address', $address);
         $stmt->bindParam(':city', $city);
         $stmt->bindParam(':rating', $rating);
+        $stmt->bindParam(':submitted_by', $submitted_by);
         
         if ($stmt->execute()) {
             $place->id = $this->conn->lastInsertId();
@@ -111,7 +118,7 @@ class PlaceRepository
         $query = "UPDATE " . $this->table_name . " 
                  SET name = :name, description = :description, category = :category,
                      address = :address, city = :city, rating = :rating,
-                     updated_at = NOW()
+                     submitted_by = :submitted_by, updated_at = NOW()
                  WHERE id = :id";
         
         $stmt = $this->conn->prepare($query);
@@ -123,6 +130,7 @@ class PlaceRepository
         $address = htmlspecialchars(strip_tags($place->address));
         $city = htmlspecialchars(strip_tags($place->city));
         $rating = $place->rating;
+        $submitted_by = htmlspecialchars(strip_tags($place->submitted_by ?? 'anonymous'));
         
         $stmt->bindParam(':name', $name);
         $stmt->bindParam(':description', $description);
@@ -130,6 +138,7 @@ class PlaceRepository
         $stmt->bindParam(':address', $address);
         $stmt->bindParam(':city', $city);
         $stmt->bindParam(':rating', $rating);
+        $stmt->bindParam(':submitted_by', $submitted_by);
         $stmt->bindParam(':id', $place->id);
         
         return $stmt->execute();

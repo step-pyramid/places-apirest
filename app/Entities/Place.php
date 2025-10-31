@@ -12,6 +12,7 @@ class Place
     public $address;
     public $city;
     public $rating;
+    public $submitted_by;
     public $created_at;
     public $updated_at;
 
@@ -30,6 +31,7 @@ class Place
         $this->address = $data['address'] ?? '';
         $this->city = $data['city'] ?? '';
         $this->rating = isset($data['rating']) ? floatval($data['rating']) : null;
+        $this->submitted_by = $data['submitted_by'] ?? null;
         $this->created_at = $data['created_at'] ?? null;
         $this->updated_at = $data['updated_at'] ?? null;
     }
@@ -43,6 +45,7 @@ class Place
             'address' => $this->address,
             'city' => $this->city,
             'rating' => $this->rating,
+            'submitted_by' => $this->submitted_by,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at
         ];
