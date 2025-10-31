@@ -51,13 +51,17 @@ class PlaceRepository
         }
         
         // Add ORDER BY for sorting
-        $validSortFields = ['name', 'category', 'city', 'rating', 'created_at'];
+        $validSortFields = ['name', 'category', 'city', 'rating', 'created_at', 'submitted_by'];
         $validOrders = ['ASC', 'DESC'];
         
         $sortField = in_array($sort, $validSortFields) ? $sort : 'created_at';
         $sortOrder = in_array(strtoupper($order), $validOrders) ? strtoupper($order) : 'DESC';
         
-        $query .= " ORDER BY " . $sortField . " " . $sortOrder;
+        if ($sortField === 'submitted_by') {
+            $query .= " ORDER BY COALESCE(" . $sortField . ", '') " . $sortOrder;
+        } else {
+            $query .= " ORDER BY " . $sortField . " " . $sortOrder;
+        }
         
         // Execute query
         $stmt = $this->conn->prepare($query);
@@ -85,7 +89,7 @@ class PlaceRepository
     public function create(Place $place): bool {
         $query = "INSERT INTO " . $this->table_name . " 
                  (name, description, category, address, city, rating, submitted_by, created_at) 
-                 VALUES (:name, :description, :category, :address, :city, :rating, NOW())";
+                 VALUES (:name, :description, :category, :address, :city, :rating, :submitted_by, NOW())";
         
         $stmt = $this->conn->prepare($query);
         
@@ -97,7 +101,9 @@ class PlaceRepository
         $city = htmlspecialchars(strip_tags($place->city));
         $rating = $place->rating;
         $submitted_by = htmlspecialchars(strip_tags($place->submitted_by ?? 'anonymous')); 
-        
+        if (empty($submitted_by)) {
+            $submitted_by = 'anonymous';
+        }
         $stmt->bindParam(':name', $name);
         $stmt->bindParam(':description', $description);
         $stmt->bindParam(':category', $category);
@@ -108,6 +114,7 @@ class PlaceRepository
         
         if ($stmt->execute()) {
             $place->id = $this->conn->lastInsertId();
+            $place->submitted_by = $submitted_by;
             return true;
         }
         return false;
@@ -131,7 +138,9 @@ class PlaceRepository
         $city = htmlspecialchars(strip_tags($place->city));
         $rating = $place->rating;
         $submitted_by = htmlspecialchars(strip_tags($place->submitted_by ?? 'anonymous'));
-        
+        if (empty($submitted_by)) {
+            $submitted_by = 'anonymous';
+        }
         $stmt->bindParam(':name', $name);
         $stmt->bindParam(':description', $description);
         $stmt->bindParam(':category', $category);
@@ -141,7 +150,12 @@ class PlaceRepository
         $stmt->bindParam(':submitted_by', $submitted_by);
         $stmt->bindParam(':id', $place->id);
         
-        return $stmt->execute();
+        if ($stmt->execute()) {
+            // FIX: Update the Place object with the actual submitted_by value
+            $place->submitted_by = $submitted_by;
+            return true;
+        }
+        return false;
     }
 
     // DELETE place
