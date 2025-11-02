@@ -5,10 +5,7 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
-require_once __DIR__ . '/../app/Config/Database.php';
-require_once __DIR__ . '/../app/Entities/Place.php';
-require_once __DIR__ . '/../app/Repositories/PlaceRepository.php';
-require_once __DIR__ . '/../app/Controllers/PlacesController.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 use App\Controllers\PlacesController;
 

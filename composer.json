@@ -1,0 +1,16 @@
+{
+    "name": "josep/places-apirest",
+    "description": "A RESTful API for managing places",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Joseph MacMunn"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    },
+    "require": {}
+}
