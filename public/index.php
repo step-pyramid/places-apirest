@@ -10,46 +10,62 @@ require_once __DIR__ . '/../vendor/autoload.php';
 use App\Controllers\PlacesController;
 
 $method = $_SERVER['REQUEST_METHOD'];
-$path = $_SERVER['REQUEST_URI'];
+
+// ROBUST PATH EXTRACTION - works in any environment
+$requestUri = $_SERVER['REQUEST_URI'];
+$scriptName = $_SERVER['SCRIPT_NAME'];
+
+// Remove query string
+$requestUri = strtok($requestUri, '?');
+
+// If the script is not in the root, remove the script directory
+if (dirname($scriptName) !== '/') {
+    $basePath = dirname($scriptName);
+    if (strpos($requestUri, $basePath) === 0) {
+        $path = substr($requestUri, strlen($basePath));
+    } else {
+        $path = $requestUri;
+    }
+} else {
+    $path = $requestUri;
+}
+
+// Ensure path starts with /
+if (empty($path) || $path[0] !== '/') {
+    $path = '/' . $path;
+}
+
+// Debug output (remove in production)
+// error_log("Path extracted: " . $path);
 
 if ($method === 'OPTIONS') {
     http_response_code(200);
     exit;
 }
 
-// PORTABLE: Extract API path dynamically (works in any environment)
-$scriptDir = dirname($_SERVER['SCRIPT_NAME']);
-$apiPath = str_replace($scriptDir, '', $path);
-$apiPath = strtok($apiPath, '?'); // Remove query string
-
-// Ensure it starts with /
-if (empty($apiPath) || $apiPath[0] !== '/') {
-    $apiPath = '/' . $apiPath;
-}
-
 $controller = new PlacesController();
 
-// Simple router
-if ($apiPath === '/api/places' && $method === 'GET') {
+// Router
+if ($path === '/api/places' && $method === 'GET') {
     $controller->index();
 } 
-elseif ($apiPath === '/api/places' && $method === 'POST') {
-    $controller->store();  // ← Fixed: call actual method
+elseif ($path === '/api/places' && $method === 'POST') {
+    $controller->store();
 }
-elseif (preg_match('#^/api/places/(\d+)$#', $apiPath, $matches) && $method === 'GET') {
-    $controller->show($matches[1]);  // ← Fixed: call actual method
+elseif (preg_match('#^/api/places/(\d+)$#', $path, $matches) && $method === 'GET') {
+    $controller->show($matches[1]);
 }
-elseif (preg_match('#^/api/places/(\d+)$#', $apiPath, $matches) && $method === 'PUT') {
-    $controller->update($matches[1]);  // ← Fixed: call actual method
+elseif (preg_match('#^/api/places/(\d+)$#', $path, $matches) && $method === 'PUT') {
+    $controller->update($matches[1]);
 }
-elseif (preg_match('#^/api/places/(\d+)$#', $apiPath, $matches) && $method === 'DELETE') {
-    $controller->destroy($matches[1]);  // ← Fixed: call actual method
+elseif (preg_match('#^/api/places/(\d+)$#', $path, $matches) && $method === 'DELETE') {
+    $controller->destroy($matches[1]);
 }
 else {
     http_response_code(404);
     echo json_encode([
         'error' => 'Endpoint not found',
-        'requested' => $apiPath,
+        'requested' => $path,
         'method' => $method,
         'available_endpoints' => [
             'GET /api/places',
@@ -60,3 +76,4 @@ else {
         ]
     ]);
 }
+?>

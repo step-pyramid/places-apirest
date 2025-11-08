@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS places (
 );
 
 -- Insert sample data WITH submitted_by
-INSERT INTO places (name, description, category, address, city, rating, submitted_by) VALUES
+INSERT IGNORE INTO places (name, description, category, address, city, rating, submitted_by) VALUES
 ('Central Park Cafe', 'Cozy cafe with great coffee and pastries', 'cafe', '123 Park Avenue', 'New York', 4.5, 'Alice Johnson'),
 ('Louvre Museum', 'World''s largest art museum', 'museum', 'Rue de Rivoli', 'Paris', 4.8, 'Bob Smith'),
 ('Eiffel Tower', 'Iconic iron tower', 'landmark', 'Champ de Mars', 'Paris', 4.7, 'Carol Davis'),
